@@ -6,7 +6,6 @@
     <title>PRIX CARBURANT - Officiel</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
@@ -37,14 +36,13 @@
 
         h1 { margin: 0; font-size: 1.5rem; letter-spacing: 2px; }
 
-        /* Style de la Carte */
         #map { 
             height: 350px; 
             margin: 15px; 
             border-radius: 20px; 
             border: 2px solid var(--green);
             box-shadow: 0 0 15px rgba(0, 255, 135, 0.3);
-            display: none; /* Cachée par défaut jusqu'à la recherche */
+            display: none;
             z-index: 1;
         }
 
@@ -74,7 +72,7 @@
             transition: 0.3s;
         }
 
-        input:focus { border-color: var(--green); box-shadow: 0 0 10px rgba(0, 255, 135, 0.2); }
+        input:focus { border-color: var(--green); }
 
         button {
             width: 100%;
@@ -87,10 +85,7 @@
             font-size: 1rem;
             cursor: pointer;
             text-transform: uppercase;
-            transition: 0.3s;
         }
-
-        button:active { transform: scale(0.98); }
 
         .card {
             background: var(--glass);
@@ -98,7 +93,6 @@
             padding: 20px;
             border-radius: 25px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             animation: fadeIn 0.5s ease;
         }
 
@@ -130,15 +124,9 @@
             border-radius: 15px;
             font-weight: bold;
             font-size: 0.9rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: 0.3s;
         }
 
-        .btn-map:hover { background: rgba(255, 255, 255, 0.2); }
-
         #loader { display: none; text-align: center; padding: 30px; color: var(--green); }
-        
-        /* Correction couleurs Leaflet pour mobile */
         .leaflet-popup-content-wrapper { background: #203a43; color: white; border: 1px solid var(--green); }
         .leaflet-popup-tip { background: #203a43; }
     </style>
@@ -150,8 +138,8 @@
 </div>
 
 <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Ville, Code Postal" autocomplete="off">
-    <button onclick="rechercher()">RECHERCHER</button>
+    <input type="text" id="searchInput" placeholder="Ville, Code Postal ou Département" autocomplete="off">
+    <button onclick="rechercher()">RECHERCHER LE MOINS CHER</button>
 </div>
 
 <div id="map"></div>
@@ -162,13 +150,11 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // Configuration de la carte
     let map = L.map('map').setView([46.2276, 2.2137], 6);
     let markersLayer = L.layerGroup().addTo(map);
 
-    // Utilisation des tuiles CARTO (ne bloque pas le referer)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; CARTO'
+        attribution: '© CARTO'
     }).addTo(map);
 
     const MARQUES = ["TOTAL", "INTERMARCHE", "LECLERC", "CARREFOUR", "SUPER U", "ESSO", "AVIA", "CASINO", "AUCHAN", "BP", "SHELL", "VULCO"];
@@ -186,18 +172,16 @@
         loader.style.display = "block";
 
         let filter = "";
-        
-        // Logique de filtrage
         if (/^\d{5}$/.test(query)) { 
             filter = `cp%3D%22${query}%22`; 
         } else if (/^\d{1,3}$/.test(query)) {
-            const dept = query.padStart(2, '0'); // "1" devient "01"
+            const dept = query.padStart(2, '0');
             filter = `departement_code%3D%22${dept}%22`;
         } else {
             filter = `ville%20LIKE%20%22${query.toUpperCase()}%22`;
         }
 
-        const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${filter}&limit=40`;
+        const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${filter}&limit=100`;
 
         try {
             const res = await fetch(url);
@@ -210,10 +194,19 @@
                 return;
             }
 
+            // --- LOGIQUE DE TRI ---
+            // On trie par prix du Gazole croissant. 
+            // Si le gazole est absent, on met une valeur très haute (99) pour l'envoyer à la fin.
+            const sortedResults = data.results.sort((a, b) => {
+                const prixA = a.gazole_prix ? parseFloat(a.gazole_prix) : 99;
+                const prixB = b.gazole_prix ? parseFloat(b.gazole_prix) : 99;
+                return prixA - prixB;
+            });
+
             mapDiv.style.display = "block";
             let bounds = [];
 
-            data.results.forEach(s => {
+            sortedResults.forEach((s, index) => {
                 let nom = "STATION";
                 let fullStr = ((s.nom || "") + " " + (s.marque || "") + " " + (s.adresse || "")).toUpperCase();
                 for (let m of MARQUES) { if (fullStr.includes(m)) { nom = m; break; } }
@@ -222,51 +215,53 @@
                 if (s.geom) {
                     const lat = s.geom.lat;
                     const lon = s.geom.lon;
+                    // On ajoute le rang (1er, 2eme...) dans la bulle
                     const marker = L.marker([lat, lon]).bindPopup(`
-                        <b style="color:#00ff87">${nom}</b><br>
-                         Gazole: ${s.gazole_prix || '--'}€<br>
-                         E10: ${s.e10_prix || '--'}€
+                        <b style="color:#00ff87">#${index + 1} - ${nom}</b><br>
+                        Gazole: <b>${s.gazole_prix || '--'}€</b><br>
+                        E10: ${s.e10_prix || '--'}€
                     `);
                     markersLayer.addLayer(marker);
                     bounds.push([lat, lon]);
                 }
 
-                // Création de la carte résultat
+                // Carte résultat avec badge "N°1" pour le moins cher
+                const isCheapest = index === 0 ? `<span style="background:var(--green); color:#000; padding:2px 8px; border-radius:5px; font-size:0.7rem; vertical-align:middle; margin-left:10px;">LE MOINS CHER</span>` : "";
+
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <div class="brand">${nom}</div>
+                    <div class="brand">${nom} ${isCheapest}</div>
                     <span class="address"><i class="fas fa-map-marker-alt"></i> ${s.adresse || ''}, ${s.ville}</span>
                     
                     <div class="price-grid">
-                        <div class="price-item"><span class="f-name">GAZOLE</span><span class="f-val">${s.gazole_prix || '--'}€</span></div>
+                        <div class="price-item" style="${index === 0 ? 'border: 1px solid var(--green)' : ''}">
+                            <span class="f-name">GAZOLE</span>
+                            <span class="f-val">${s.gazole_prix || '--'}€</span>
+                        </div>
                         <div class="price-item"><span class="f-name">SP95-E10</span><span class="f-val">${s.e10_prix || '--'}€</span></div>
                         <div class="price-item"><span class="f-name">SP98</span><span class="f-val">${s.sp98_prix || '--'}€</span></div>
                         <div class="price-item"><span class="f-name">E85</span><span class="f-val">${s.e85_prix || '--'}€</span></div>
                     </div>
 
                     <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nom + ' ' + s.adresse + ' ' + s.ville)}" target="_blank" class="btn-map">
-                        <i class="fas fa-location-arrow"></i> ITINÉRAIRE GOOGLE MAPS
+                        <i class="fas fa-location-arrow"></i> ITINÉRAIRE
                     </a>
                 `;
                 resultsDiv.appendChild(card);
             });
 
-            // Ajustement vue carte
             if (bounds.length > 0) {
                 map.fitBounds(bounds);
-                // Petit fix pour rafraîchir l'affichage du moteur de carte
                 setTimeout(() => map.invalidateSize(), 300);
             }
 
         } catch (e) {
             loader.style.display = "none";
-            console.error(e);
-            alert("Erreur réseau. Vérifiez votre connexion.");
+            alert("Erreur réseau.");
         }
     }
 
-    // Touche Entrée pour chercher
     document.getElementById('searchInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') rechercher();
     });
