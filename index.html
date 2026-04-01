@@ -3,98 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Prix Gas Station - Complet</title>
+    <title>PRIX CARBURANT - Officiel</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <style>
-        :root { --green: #00ff87; --red: #ff4b2b; --blue: #00d2ff; --glass: rgba(255, 255, 255, 0.1); }
-        
+        :root { 
+            --green: #00ff87; 
+            --blue-glow: #00d2ff;
+            --glass: rgba(255, 255, 255, 0.1);
+            --bg: #1a2a6c;
+        }
+
         body { 
-            font-family: 'Segoe UI', sans-serif; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
             margin: 0; 
             background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             background-attachment: fixed;
             color: white;
-            padding-bottom: 30px;
+            padding-bottom: 50px;
         }
 
         .header { 
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 20px;
+            padding: 25px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; letter-spacing: 2px; }
+
+        /* Style de la Carte */
+        #map { 
+            height: 350px; 
+            margin: 15px; 
+            border-radius: 20px; 
+            border: 2px solid var(--green);
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.3);
+            display: none; /* Cachée par défaut jusqu'à la recherche */
+            z-index: 1;
         }
 
         .search-container {
             margin: 15px;
-            padding: 15px;
+            padding: 20px;
             background: var(--glass);
             border-radius: 20px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         input {
             width: 100%;
             box-sizing: border-box;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 18px;
+            background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
+            border-radius: 15px;
             color: white;
             font-size: 16px;
-            outline: none;
             text-align: center;
+            outline: none;
+            transition: 0.3s;
         }
 
-        input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        input:focus { border-color: var(--green); box-shadow: 0 0 10px rgba(0, 255, 135, 0.2); }
 
         button {
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             background: var(--green);
             color: #0f2027;
             border: none;
-            border-radius: 12px;
+            border-radius: 15px;
             font-weight: 900;
+            font-size: 1rem;
             cursor: pointer;
             text-transform: uppercase;
+            transition: 0.3s;
         }
+
+        button:active { transform: scale(0.98); }
 
         .card {
             background: var(--glass);
             margin: 15px;
-            padding: 18px;
+            padding: 20px;
             border-radius: 25px;
-            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease;
         }
 
-        .brand { font-size: 1.3rem; font-weight: 900; color: var(--green); text-transform: uppercase; margin-bottom: 2px; }
-        .address { font-size: 0.8rem; color: rgba(255,255,255,0.6); display: block; margin-bottom: 15px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .price-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 8px; 
-            margin-bottom: 15px; 
-        }
+        .brand { font-size: 1.4rem; font-weight: 900; color: var(--green); text-transform: uppercase; margin-bottom: 5px; }
+        .address { font-size: 0.85rem; color: rgba(255,255,255,0.6); display: block; margin-bottom: 20px; }
+
+        .price-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
         
         .price-item {
             background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .f-name { font-size: 0.65rem; font-weight: bold; color: var(--blue); display: block; }
-        .f-val { font-size: 1.2rem; font-weight: 900; color: #fff; }
+        .f-name { font-size: 0.7rem; font-weight: bold; color: var(--blue-glow); display: block; margin-bottom: 5px; }
+        .f-val { font-size: 1.4rem; font-weight: 900; color: #fff; }
 
         .btn-map {
             display: block;
@@ -102,95 +126,150 @@
             background: rgba(255, 255, 255, 0.1);
             color: white;
             text-decoration: none;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 15px;
+            border-radius: 15px;
             font-weight: bold;
             font-size: 0.9rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
         }
 
-        #loader { display: none; text-align: center; padding: 20px; color: var(--green); }
+        .btn-map:hover { background: rgba(255, 255, 255, 0.2); }
+
+        #loader { display: none; text-align: center; padding: 30px; color: var(--green); }
+        
+        /* Correction couleurs Leaflet pour mobile */
+        .leaflet-popup-content-wrapper { background: #203a43; color: white; border: 1px solid var(--green); }
+        .leaflet-popup-tip { background: #203a43; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>PRIX CARBURANTS</h1>
+    <h1 id="mainTitle">PRIX CARBURANT</h1>
 </div>
 
 <div class="search-container">
-    <input type="number" id="cpInput" placeholder="Entrer votre code postal ici" value="">
-    <button onclick="rechercher()">OK</button>
+    <input type="text" id="searchInput" placeholder="Ville, Code Postal" autocomplete="off">
+    <button onclick="rechercher()">RECHERCHER</button>
 </div>
 
-<div id="loader"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+<div id="map"></div>
+
+<div id="loader"><i class="fas fa-spinner fa-spin fa-3x"></i></div>
 <div id="results"></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-    const MARQUES = ["INTERMARCHE", "LECLERC", "TOTAL", "CARREFOUR", "SUPER U", "ESSO", "AVIA", "VULCO", "CASINO", "AUCHAN", "BP", "SHELL"];
+    // Configuration de la carte
+    let map = L.map('map').setView([46.2276, 2.2137], 6);
+    let markersLayer = L.layerGroup().addTo(map);
+
+    // Utilisation des tuiles CARTO (ne bloque pas le referer)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CARTO'
+    }).addTo(map);
+
+    const MARQUES = ["TOTAL", "INTERMARCHE", "LECLERC", "CARREFOUR", "SUPER U", "ESSO", "AVIA", "CASINO", "AUCHAN", "BP", "SHELL", "VULCO"];
 
     async function rechercher() {
-        const cp = document.getElementById('cpInput').value;
+        const query = document.getElementById('searchInput').value.trim();
         const resultsDiv = document.getElementById('results');
         const loader = document.getElementById('loader');
+        const mapDiv = document.getElementById('map');
         
-        if (!cp) {
-            alert("Merci d'entrer un code postal.");
-            return;
-        }
+        if (!query) return;
 
         resultsDiv.innerHTML = "";
+        markersLayer.clearLayers();
         loader.style.display = "block";
 
-        const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=cp%3D%22${cp}%22&limit=25`;
+        let filter = "";
+        
+        // Logique de filtrage
+        if (/^\d{5}$/.test(query)) { 
+            filter = `cp%3D%22${query}%22`; 
+        } else if (/^\d{1,3}$/.test(query)) {
+            const dept = query.padStart(2, '0'); // "1" devient "01"
+            filter = `departement_code%3D%22${dept}%22`;
+        } else {
+            filter = `ville%20LIKE%20%22${query.toUpperCase()}%22`;
+        }
+
+        const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${filter}&limit=40`;
 
         try {
             const res = await fetch(url);
             const data = await res.json();
             loader.style.display = "none";
 
-            if (data.results.length === 0) {
-                resultsDiv.innerHTML = "<p style='text-align:center'>Aucune station trouvée pour ce code.</p>";
+            if (!data.results || data.results.length === 0) {
+                resultsDiv.innerHTML = "<p style='text-align:center; padding:20px;'>❌ Aucun résultat trouvé.</p>";
+                mapDiv.style.display = "none";
                 return;
             }
 
-            const stations = data.results.sort((a, b) => {
-                const pA = parseFloat(a.gazole_prix) || 9.99;
-                const pB = parseFloat(b.gazole_prix) || 9.99;
-                return pA - pB;
-            });
+            mapDiv.style.display = "block";
+            let bounds = [];
 
-            stations.forEach(s => {
+            data.results.forEach(s => {
                 let nom = "STATION";
-                let full = (s.nom + " " + s.marque + " " + s.adresse).toUpperCase();
-                for (let m of MARQUES) { if (full.includes(m)) { nom = m; break; } }
+                let fullStr = ((s.nom || "") + " " + (s.marque || "") + " " + (s.adresse || "")).toUpperCase();
+                for (let m of MARQUES) { if (fullStr.includes(m)) { nom = m; break; } }
 
+                // Marqueur sur la carte
+                if (s.geom) {
+                    const lat = s.geom.lat;
+                    const lon = s.geom.lon;
+                    const marker = L.marker([lat, lon]).bindPopup(`
+                        <b style="color:#00ff87">${nom}</b><br>
+                         Gazole: ${s.gazole_prix || '--'}€<br>
+                         E10: ${s.e10_prix || '--'}€
+                    `);
+                    markersLayer.addLayer(marker);
+                    bounds.push([lat, lon]);
+                }
+
+                // Création de la carte résultat
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <div class="brand">${nom}</div>
-                    <span class="address"><i class="fas fa-map-marker-alt"></i> ${s.adresse}, ${s.ville}</span>
+                    <span class="address"><i class="fas fa-map-marker-alt"></i> ${s.adresse || ''}, ${s.ville}</span>
                     
                     <div class="price-grid">
                         <div class="price-item"><span class="f-name">GAZOLE</span><span class="f-val">${s.gazole_prix || '--'}€</span></div>
                         <div class="price-item"><span class="f-name">SP95-E10</span><span class="f-val">${s.e10_prix || '--'}€</span></div>
-                        <div class="price-item"><span class="f-name">SP95</span><span class="f-val">${s.sp95_prix || '--'}€</span></div>
                         <div class="price-item"><span class="f-name">SP98</span><span class="f-val">${s.sp98_prix || '--'}€</span></div>
                         <div class="price-item"><span class="f-name">E85</span><span class="f-val">${s.e85_prix || '--'}€</span></div>
-                        <div class="price-item"><span class="f-name">GPLc</span><span class="f-val">${s.gplc_prix || '--'}€</span></div>
                     </div>
 
                     <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nom + ' ' + s.adresse + ' ' + s.ville)}" target="_blank" class="btn-map">
-                        <i class="fas fa-route"></i> Y ALLER
+                        <i class="fas fa-location-arrow"></i> ITINÉRAIRE GOOGLE MAPS
                     </a>
                 `;
                 resultsDiv.appendChild(card);
             });
+
+            // Ajustement vue carte
+            if (bounds.length > 0) {
+                map.fitBounds(bounds);
+                // Petit fix pour rafraîchir l'affichage du moteur de carte
+                setTimeout(() => map.invalidateSize(), 300);
+            }
+
         } catch (e) {
             loader.style.display = "none";
-            alert("Erreur de connexion");
+            console.error(e);
+            alert("Erreur réseau. Vérifiez votre connexion.");
         }
     }
+
+    // Touche Entrée pour chercher
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') rechercher();
+    });
 </script>
 </body>
 </html>
