@@ -3,113 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FuelRadar — Prix Carburants</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>FuelRadar — Recherche par Ville</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="header">
-    <div class="header-inner">
-        <div class="logo">
-            <span class="logo-icon">⛽</span>
-            <span class="logo-text">FUEL<span class="logo-accent">RADAR</span></span>
-        </div>
-        <p class="tagline">Les meilleurs prix près de vous</p>
-    </div>
-    <div class="radar-ring"></div>
-    <div class="radar-ring r2"></div>
-    <div class="radar-ring r3"></div>
+    <div class="logo">⛽ FUEL<span class="logo-accent">RADAR</span></div>
+    <p class="tagline">Trouvez le moins cher à la ronde</p>
 </header>
 
-<!-- SEARCH PANEL -->
 <div class="search-panel">
-
-    <!-- MODE TOGGLE -->
-    <div class="mode-toggle">
-        <button class="mode-btn active" id="btn-geo" onclick="setMode('geo')">
-            <span class="mode-icon">📍</span>
-            <span>Ma position</span>
-        </button>
-        <button class="mode-btn" id="btn-addr" onclick="setMode('addr')">
-            <span class="mode-icon">🔍</span>
-            <span>Par adresse</span>
-        </button>
-    </div>
-
-    <!-- GEO MODE -->
-    <div class="input-block" id="block-geo">
-        <button class="btn-locate" onclick="locateUser()">
-            <span class="pulse-dot"></span>
-            Détecter ma position GPS
-        </button>
-        <p class="geo-status" id="geo-status">En attente de localisation...</p>
-    </div>
-
-    <!-- ADDR MODE -->
-    <div class="input-block hidden" id="block-addr">
+    <div class="input-block">
+        <label>Ville ou Code Postal</label>
         <div class="input-row">
-            <input type="text" id="addrInput" placeholder="Ville ou code postal..." />
-            <button class="btn-search-addr" onclick="searchByAddress()">GO</button>
+            <input type="text" id="addrInput" placeholder="Ex: Paris, 69001..." />
         </div>
     </div>
 
-    <!-- RAYON SLIDER -->
     <div class="rayon-block">
         <label>Rayon de recherche : <strong id="rayon-val">15</strong> km</label>
-        <input type="range" id="rayon" min="2" max="50" value="15" step="1" oninput="updateRayon(this.value)">
+        <input type="range" id="rayon" min="5" max="50" value="15" step="5" oninput="document.getElementById('rayon-val').textContent=this.value">
     </div>
 
-    <!-- FUEL FILTER -->
     <div class="fuel-filter">
-        <span class="filter-label">Carburant affiché :</span>
         <div class="fuel-chips">
             <button class="chip active" data-fuel="gazole">Gazole</button>
-            <button class="chip" data-fuel="e10">SP95-E10</button>
+            <button class="chip" data-fuel="e10">E10</button>
             <button class="chip" data-fuel="sp95">SP95</button>
             <button class="chip" data-fuel="sp98">SP98</button>
             <button class="chip" data-fuel="e85">E85</button>
-            <button class="chip" data-fuel="gplc">GPLc</button>
         </div>
     </div>
 
-    <button class="btn-main" onclick="lancerRecherche()" id="btn-main">
-        <span>🔍 Rechercher</span>
-    </button>
+    <button class="btn-main" onclick="lancerRecherche()">🔍 RECHERCHER</button>
 </div>
 
-<!-- STATS BAR -->
-<div class="stats-bar hidden" id="stats-bar">
-    <div class="stat"><span class="stat-num" id="stat-count">0</span><span class="stat-lbl">stations</span></div>
-    <div class="stat-sep"></div>
-    <div class="stat"><span class="stat-num" id="stat-min">--</span><span class="stat-lbl">prix min</span></div>
-    <div class="stat-sep"></div>
-    <div class="stat"><span class="stat-num" id="stat-avg">--</span><span class="stat-lbl">prix moy.</span></div>
-</div>
-
-<!-- MAP -->
 <div id="map-container" class="map-container hidden">
     <div id="map"></div>
-    <div class="map-label">Carte interactive — cliquez sur un repère</div>
 </div>
 
-<!-- LOADER -->
 <div id="loader" class="loader hidden">
-    <div class="radar-anim">
-        <div class="radar-sweep"></div>
-        <div class="radar-dot"></div>
-    </div>
-    <p>Scan en cours...</p>
+    <p>SCAN EN COURS...</p>
 </div>
 
-<!-- RESULTS -->
 <div id="results"></div>
-
-<!-- BACK TO TOP -->
-<button class="back-top hidden" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
