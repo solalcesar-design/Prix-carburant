@@ -38,12 +38,12 @@
             gap: 10px;
         }
 
-        .input-label {
-            font-size: 0.75rem;
+        /* Style pour les labels ajoutés */
+        .search-label {
+            font-size: 0.8rem;
             color: var(--blue);
-            font-weight: bold;
             margin-left: 5px;
-            text-transform: uppercase;
+            font-weight: bold;
         }
 
         input {
@@ -127,11 +127,11 @@
 </div>
 
 <div class="search-container">
-    <span class="input-label">Ville ou Code Postal</span>
-    <input type="text" id="locInput" placeholder="Ex: 75001, Lyon ou village..." value="">
+    <div class="search-label">VILLE OU CODE POSTAL</div>
+    <input type="text" id="cpInput" placeholder="Ex: 75001 ou Lyon" value="">
     
-    <span class="input-label">Rayon de recherche (km)</span>
-    <input type="number" id="rayonInput" value="15" min="1" max="50">
+    <div class="search-label">RAYON (KM)</div>
+    <input type="number" id="rayonInput" placeholder="Rayon en km" value="15">
     
     <button onclick="rechercher()">OK</button>
 </div>
@@ -140,10 +140,10 @@
 <div id="results"></div>
 
 <script>
-    const MARQUES = ["INTERMARCHE", "LECLERC", "TOTAL", "CARREFOUR", "SUPER U", "ESSO", "AVIA", "VULCO", "CASINO", "AUCHAN", "BP", "SHELL", "NETTO", "SYSTEME U"];
+    const MARQUES = ["INTERMARCHE", "LECLERC", "TOTAL", "CARREFOUR", "SUPER U", "ESSO", "AVIA", "VULCO", "CASINO", "AUCHAN", "BP", "SHELL"];
 
     async function rechercher() {
-        const query = document.getElementById('locInput').value.trim();
+        const query = document.getElementById('cpInput').value;
         const rayon = document.getElementById('rayonInput').value || 15;
         const resultsDiv = document.getElementById('results');
         const loader = document.getElementById('loader');
@@ -157,42 +157,43 @@
         loader.style.display = "block";
 
         try {
-            // Utilisation de Nominatim pour trouver les coordonnées de la ville/CP
-            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ', France')}&format=json&limit=1`, {
-                headers: { 'User-Agent': 'FuelRadar-App' }
-            });
+            // Étape 1 : On cherche les coordonnées de ce que l'utilisateur a tapé (Ville ou CP)
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ', France')}&format=json&limit=1`);
             const geoData = await geoRes.json();
 
             let whereClause = "";
 
             if (geoData.length > 0) {
-                // Si on trouve la ville, on cherche à la ronde (rayon)
+                // Si on a trouvé des coordonnées, on fait une recherche "à la ronde"
                 const lat = parseFloat(geoData[0].lat);
                 const lon = parseFloat(geoData[0].lon);
-                const deg = rayon / 111; // Conversion km en degrés approx
+                const deg = rayon / 111; // Conversion km en degrés approximative
                 whereClause = `latitude > ${lat - deg} AND latitude < ${lat + deg} AND longitude > ${lon - deg} AND longitude < ${lon + deg}`;
             } else {
-                // Repli : recherche directe si Nominatim échoue
-                whereClause = `cp = "${query}" OR ville LIKE "${query.toUpperCase()}"`;
+                // Sinon on fait la recherche exacte par CP comme avant
+                whereClause = `cp%3D%22${query}%22`;
             }
 
-            const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${encodeURIComponent(whereClause)}&limit=50`;
+            const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${encodeURIComponent(whereClause)}&limit=40`;
 
             const res = await fetch(url);
             const data = await res.json();
             loader.style.display = "none";
 
-            if (!data.results || data.results.length === 0) {
+            if (data.results.length === 0) {
                 resultsDiv.innerHTML = "<p style='text-align:center'>Aucune station trouvée.</p>";
                 return;
             }
 
-            // Tri par prix (Gazole par défaut)
-            const stations = data.results.sort((a, b) => (parseFloat(a.gazole_prix) || 9) - (parseFloat(b.gazole_prix) || 9));
+            const stations = data.results.sort((a, b) => {
+                const pA = parseFloat(a.gazole_prix) || 9.99;
+                const pB = parseFloat(b.gazole_prix) || 9.99;
+                return pA - pB;
+            });
 
             stations.forEach(s => {
                 let nom = "STATION";
-                let full = ((s.nom || "") + " " + (s.marque || "") + " " + (s.adresse || "")).toUpperCase();
+                let full = (s.nom + " " + s.marque + " " + s.adresse).toUpperCase();
                 for (let m of MARQUES) { if (full.includes(m)) { nom = m; break; } }
 
                 const card = document.createElement('div');
@@ -202,12 +203,12 @@
                     <span class="address"><i class="fas fa-map-marker-alt"></i> ${s.adresse}, ${s.ville}</span>
                     
                     <div class="price-grid">
-                        <div class="price-item"><span class="f-name">GAZOLE</span><span class="f-val">${s.gazole_prix ? parseFloat(s.gazole_prix).toFixed(3) : '--'}€</span></div>
-                        <div class="price-item"><span class="f-name">SP95-E10</span><span class="f-val">${s.e10_prix ? parseFloat(s.e10_prix).toFixed(3) : '--'}€</span></div>
-                        <div class="price-item"><span class="f-name">SP95</span><span class="f-val">${s.sp95_prix ? parseFloat(s.sp95_prix).toFixed(3) : '--'}€</span></div>
-                        <div class="price-item"><span class="f-name">SP98</span><span class="f-val">${s.sp98_prix ? parseFloat(s.sp98_prix).toFixed(3) : '--'}€</span></div>
-                        <div class="price-item"><span class="f-name">E85</span><span class="f-val">${s.e85_prix ? parseFloat(s.e85_prix).toFixed(3) : '--'}€</span></div>
-                        <div class="price-item"><span class="f-name">GPLc</span><span class="f-val">${s.gplc_prix ? parseFloat(s.gplc_prix).toFixed(3) : '--'}€</span></div>
+                        <div class="price-item"><span class="f-name">GAZOLE</span><span class="f-val">${s.gazole_prix || '--'}€</span></div>
+                        <div class="price-item"><span class="f-name">SP95-E10</span><span class="f-val">${s.e10_prix || '--'}€</span></div>
+                        <div class="price-item"><span class="f-name">SP95</span><span class="f-val">${s.sp95_prix || '--'}€</span></div>
+                        <div class="price-item"><span class="f-name">SP98</span><span class="f-val">${s.sp98_prix || '--'}€</span></div>
+                        <div class="price-item"><span class="f-name">E85</span><span class="f-val">${s.e85_prix || '--'}€</span></div>
+                        <div class="price-item"><span class="f-name">GPLc</span><span class="f-val">${s.gplc_prix || '--'}€</span></div>
                     </div>
 
                     <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nom + ' ' + s.adresse + ' ' + s.ville)}" target="_blank" class="btn-map">
@@ -218,7 +219,7 @@
             });
         } catch (e) {
             loader.style.display = "none";
-            alert("Erreur de connexion.");
+            alert("Erreur de connexion");
         }
     }
 </script>
