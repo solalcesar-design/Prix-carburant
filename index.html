@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PRIX CARBURANT</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Station App">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#0f172a">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -185,14 +192,13 @@
         resultsDiv.innerHTML = ""; markersLayer.clearLayers();
 
         let filter = (lat && lon) ? `within_distance(geom, geom'POINT(${lon} ${lat})', ${rayon}m)` : 
-                     (/^\d{5}$/.test(query) ? `cp="${query}"` : `ville LIKE "${query.toUpperCase()}"`);
+                    (/^\d{5}$/.test(query) ? `cp="${query}"` : `ville LIKE "${query.toUpperCase()}"`);
 
         try {
             const res = await fetch(`https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${encodeURIComponent(filter)}&limit=50`);
             const data = await res.json();
             document.getElementById('loader').style.display = "none";
             
-            // Filtrer les stations qui vendent le carburant sélectionné et trier
             let filteredResults = data.results.filter(s => s[selectedFuel] != null);
             filteredResults.sort((a,b) => parseFloat(a[selectedFuel]) - parseFloat(b[selectedFuel]));
 
@@ -240,7 +246,7 @@
                         <span class="brand">${isCheapest ? 'MEILLEUR PRIX ' : ''}${name}</span>
                         <span class="address">${s.adresse}, ${s.ville}</span>
                         <div class="price-grid">${priceHTML}</div>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${s.geom.lat},${s.geom.lon}" target="_blank" class="btn-nav">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${s.geom.lat},${s.geom.lon}" target="_blank" class="btn-nav">
                             <i class="fas fa-directions"></i> Y ALLER
                         </a>
                     </div>
@@ -249,6 +255,13 @@
             map.fitBounds(points, {padding: [30, 30]});
             setTimeout(() => map.invalidateSize(), 300);
         } catch (e) { document.getElementById('loader').style.display = "none"; }
+    }
+
+    // ACTIVATION PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js');
+        });
     }
 </script>
 </body>
