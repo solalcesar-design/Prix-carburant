@@ -225,7 +225,7 @@
                     if (s[t.key]) {
                         const isActive = (t.key === selectedFuel);
                         priceHTML += `<div class="price-item ${isActive ? 'active' : ''}"><span class="p-label">${t.label}</span><span class="p-val">${s[t.key]}€</span></div>`;
-                        popupHTML += `${isActive ? '⭐' : ''} ${t.label}: ${s[t.key]}€<br>`;
+                        popupHTML += `${isActive ? '' : ''} ${t.label}: ${s[t.key]}€<br>`;
                     }
                 });
 
