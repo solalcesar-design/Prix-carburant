@@ -18,62 +18,36 @@
     <style>
         :root { --green: #00ff87; --blue: #00d2ff; --red: #ff4757; --glass: rgba(255, 255, 255, 0.08); --bg: #0f172a; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: white; padding-bottom: 50px; }
-        
         .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-
         .header { text-align: center; padding: 25px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .pump-logo { font-size: 3rem; color: var(--green); filter: drop-shadow(0 0 10px rgba(0, 255, 135, 0.5)); }
         .header h1 { margin: 0; letter-spacing: 4px; font-size: 1.8rem; text-transform: uppercase; }
-
         .glass-panel { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px; }
-        
         .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
         input, select { flex: 1; padding: 15px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; color: white; outline: none; font-size: 16px; }
-
         .selection-grid { display: flex; gap: 10px; margin-bottom: 12px; }
         .select-wrapper { flex: 1; display: flex; flex-direction: column; gap: 5px; }
         .select-label { font-size: 0.7rem; color: var(--blue); font-weight: bold; padding-left: 5px; text-transform: uppercase; }
-
         #customRangeBox { display: none; margin-bottom: 12px; }
         .btn-gps { background: rgba(0, 210, 255, 0.15); color: var(--blue); width: 55px; border-radius: 15px; border: 1px solid var(--blue); cursor: pointer; }
-        
         .btn-main { width: 100%; padding: 18px; background: linear-gradient(90deg, var(--green), var(--blue)); color: #000; border: none; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-bottom: 15px; }
-
-        .btn-install-shortcut { 
-            width: 100%; padding: 15px; background: rgba(0, 210, 255, 0.1); 
-            color: var(--blue); border: 1px solid var(--blue); border-radius: 15px; 
-            font-weight: 800; cursor: pointer; display: flex; align-items: center; 
-            justify-content: center; gap: 12px; font-size: 1rem; transition: 0.3s;
-        }
-
+        .btn-install-shortcut { width: 100%; padding: 15px; background: rgba(0, 210, 255, 0.1); color: var(--blue); border: 1px solid var(--blue); border-radius: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 1rem; }
         #map { height: 320px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0; display: none; }
-
         .card { background: var(--glass); padding: 20px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px; position: relative; }
         .card-num { position: absolute; top: 15px; right: 20px; background: var(--blue); color: #000; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; }
         .card.cheapest { border: 1px solid var(--green); }
         .card.cheapest .card-num { background: var(--green); color: black; }
-
         .brand { font-size: 1.3rem; font-weight: 900; color: var(--green); text-transform: uppercase; margin-bottom: 5px; display: block; padding-right: 40px; }
         .address { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 15px; display: block; }
-
         .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .price-item { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
         .price-item.active { border: 1px solid var(--blue); background: rgba(0, 210, 255, 0.1); }
         .p-label { font-size: 0.65rem; font-weight: bold; color: var(--blue); }
         .p-val { font-size: 1.1rem; font-weight: 900; }
-
         .btn-nav { width: 100%; padding: 14px; background: rgba(0, 210, 255, 0.05); color: var(--blue); border: 1px solid var(--blue); border-radius: 15px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; box-sizing: border-box; }
-
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(12px); overflow-y: auto; }
-        .modal-content { background: #1e293b; margin: 10% auto; padding: 30px; border-radius: 30px; width: 85%; max-width: 500px; border: 1px solid var(--blue); position: relative; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .modal-content h2 { color: var(--green); margin-top: 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-        .inst-block { margin-top: 20px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 20px; }
-        .inst-block h3 { color: var(--blue); font-size: 1rem; margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px; }
-        .modal-content ol { padding-left: 20px; font-size: 0.85rem; line-height: 1.5; color: rgba(255,255,255,0.9); }
+        .modal-content { background: #1e293b; margin: 10% auto; padding: 30px; border-radius: 30px; width: 85%; max-width: 500px; border: 1px solid var(--blue); position: relative; }
         .close-modal { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; color: var(--red); }
-
         #loader { display: none; text-align: center; padding: 20px; color: var(--green); }
     </style>
 </head>
@@ -116,12 +90,8 @@
         </div>
 
         <div id="customRangeBox"><input type="number" id="customInput" placeholder="Distance en KM"></div>
-        
         <button class="btn-main" onclick="rechercher()">Rechercher le meilleur prix</button>
-
-        <button class="btn-install-shortcut" onclick="toggleModal()">
-            <i class="fas fa-download"></i> INSTALLER L'APPLICATION
-        </button>
+        <button class="btn-install-shortcut" onclick="toggleModal()"><i class="fas fa-download"></i> INSTALLER L'APPLICATION</button>
     </div>
 
     <div id="map"></div>
@@ -133,20 +103,8 @@
     <div class="modal-content">
         <span class="close-modal" onclick="toggleModal()">×</span>
         <h2>📱 Ajouter à l'accueil</h2>
-        <div class="inst-block">
-            <h3><i class="fab fa-apple"></i> Apple (Safari)</h3>
-            <ol>
-                <li>Icône <strong>Partager</strong> <i class="fas fa-share-square"></i>.</li>
-                <li>Choisir <strong>"Sur l'écran d'accueil"</strong>.</li>
-            </ol>
-        </div>
-        <div class="inst-block">
-            <h3><i class="fab fa-android"></i> Android (Chrome)</h3>
-            <ol>
-                <li>Menu <strong>3 points</strong> <i class="fas fa-ellipsis-v"></i>.</li>
-                <li>Sélectionnez <strong>"Installer"</strong>.</li>
-            </ol>
-        </div>
+        <div class="inst-block"><h3>Apple (Safari)</h3><ol><li>Partager <i class="fas fa-share-square"></i></li><li>"Sur l'écran d'accueil"</li></ol></div>
+        <div class="inst-block"><h3>Android (Chrome)</h3><ol><li>Menu <i class="fas fa-ellipsis-v"></i></li><li>"Installer"</li></ol></div>
     </div>
 </div>
 
@@ -154,114 +112,83 @@
 <script>
     const MARQUES = ["TOTAL", "INTERMARCHE", "LECLERC", "CARREFOUR", "SUPER U", "ESSO", "AVIA", "AUCHAN", "BP", "SHELL", "NETTO", "DYNEFF", "ELAN", "CASINO"];
     const TYPES = [
-        { key: 'gazole_prix', label: 'GAZOLE' },
-        { key: 'e10_prix', label: 'E10' },
-        { key: 'sp95_prix', label: 'SP95' },
-        { key: 'sp98_prix', label: 'SP98' },
-        { key: 'e85_prix', label: 'E85' },
-        { key: 'gplc_prix', label: 'GPL' }
+        { key: 'gazole_prix', label: 'GAZOLE' }, { key: 'e10_prix', label: 'E10' },
+        { key: 'sp95_prix', label: 'SP95' }, { key: 'sp98_prix', label: 'SP98' },
+        { key: 'e85_prix', label: 'E85' }, { key: 'gplc_prix', label: 'GPL' }
     ];
 
     let map = L.map('map');
     let markersLayer = L.layerGroup().addTo(map);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-    function toggleModal() {
-        const modal = document.getElementById('installModal');
-        modal.style.display = (modal.style.display === "block") ? "none" : "block";
-    }
-
+    function toggleModal() { const m = document.getElementById('installModal'); m.style.display = (m.style.display === "block") ? "none" : "block"; }
     function checkCustom() { document.getElementById('customRangeBox').style.display = (document.getElementById('rangeSelect').value === 'custom') ? 'block' : 'none'; }
 
     function geolocaliser() {
         document.getElementById('loader').style.display = "block";
         navigator.geolocation.getCurrentPosition(
             (p) => rechercher(p.coords.latitude, p.coords.longitude),
-            () => { document.getElementById('loader').style.display = "none"; alert("GPS requis."); }
+            () => { document.getElementById('loader').style.display = "none"; alert("Activez le GPS."); }
         );
     }
 
     async function rechercher(lat = null, lon = null) {
         const query = document.getElementById('searchInput').value.trim();
         const rSelect = document.getElementById('rangeSelect').value;
-        const selectedFuel = document.getElementById('fuelSelect').value;
-        const resultsDiv = document.getElementById('results');
+        const fuel = document.getElementById('fuelSelect').value;
+        const resDiv = document.getElementById('results');
         let rayon = (rSelect === 'custom') ? (parseInt(document.getElementById('customInput').value) * 1000) : parseInt(rSelect);
 
+        if (!lat && !query) { alert("Entrez une ville ou utilisez le GPS."); return; }
+
         document.getElementById('loader').style.display = "block";
-        resultsDiv.innerHTML = ""; markersLayer.clearLayers();
+        resDiv.innerHTML = ""; markersLayer.clearLayers();
 
         let filter = (lat && lon) ? `within_distance(geom, geom'POINT(${lon} ${lat})', ${rayon}m)` : 
                     (/^\d{5}$/.test(query) ? `cp="${query}"` : `ville LIKE "${query.toUpperCase()}"`);
 
         try {
-            const res = await fetch(`https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${encodeURIComponent(filter)}&limit=50`);
+            const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=${encodeURIComponent(filter)}&limit=50`;
+            const res = await fetch(url);
             const data = await res.json();
             document.getElementById('loader').style.display = "none";
             
-            let filteredResults = data.results.filter(s => s[selectedFuel] != null);
-            filteredResults.sort((a,b) => parseFloat(a[selectedFuel]) - parseFloat(b[selectedFuel]));
+            let filtered = data.results.filter(s => s[fuel] != null).sort((a,b) => parseFloat(a[fuel]) - parseFloat(b[fuel]));
 
-            if (!filteredResults.length) {
-                resultsDiv.innerHTML = "<p style='text-align:center; padding:20px;'>Aucune station trouvée pour ce carburant dans cette zone.</p>";
-                return;
-            }
+            if (!filtered.length) { resDiv.innerHTML = "<p style='text-align:center;'>Aucune station.</p>"; return; }
 
             document.getElementById('map').style.display = "block";
             let points = [];
 
-            filteredResults.forEach((s, i) => {
+            filtered.forEach((s, i) => {
                 let name = "Station";
-                let rawText = `${s.nom} ${s.marque} ${s.adresse}`.toUpperCase();
-                for (let m of MARQUES) { if (rawText.includes(m)) { name = m; break; } }
+                let raw = `${s.nom} ${s.marque} ${s.adresse}`.toUpperCase();
+                for (let m of MARQUES) { if (raw.includes(m)) { name = m; break; } }
 
-                const isCheapest = (i === 0);
-                const color = isCheapest ? "#00ff87" : "#00d2ff";
-
+                const isBest = (i === 0);
                 let priceHTML = "";
-                let popupHTML = `<b>${i+1}. ${name}</b><br>`;
-                
-                TYPES.forEach(t => {
-                    if (s[t.key]) {
-                        const isActive = (t.key === selectedFuel);
-                        priceHTML += `<div class="price-item ${isActive ? 'active' : ''}"><span class="p-label">${t.label}</span><span class="p-val">${s[t.key]}€</span></div>`;
-                        popupHTML += `${isActive ? '' : ''} ${t.label}: ${s[t.key]}€<br>`;
-                    }
-                });
+                TYPES.forEach(t => { if (s[t.key]) priceHTML += `<div class="price-item ${t.key === fuel ? 'active' : ''}"><span class="p-label">${t.label}</span><span class="p-val">${s[t.key]}€</span></div>`; });
 
                 if (s.geom) {
-                    const pinIcon = L.divIcon({
-                        className: 'custom-pin',
-                        html: `<i class="fas fa-map-marker-alt" style="color:${color}; font-size:30px; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.5))"></i>`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 30]
-                    });
-                    L.marker([s.geom.lat, s.geom.lon], {icon: pinIcon}).addTo(markersLayer).bindPopup(popupHTML);
+                    const icon = L.divIcon({ className: 'custom-pin', html: `<i class="fas fa-map-marker-alt" style="color:${isBest ? '#00ff87' : '#00d2ff'}; font-size:30px;"></i>`, iconSize:[30,30], iconAnchor:[15,30] });
+                    L.marker([s.geom.lat, s.geom.lon], {icon}).addTo(markersLayer).bindPopup(`<b>${name}</b><br>${s[fuel]}€`);
                     points.push([s.geom.lat, s.geom.lon]);
                 }
 
-                resultsDiv.innerHTML += `
-                    <div class="card ${isCheapest ? 'cheapest' : ''}">
+                resDiv.innerHTML += `
+                    <div class="card ${isBest ? 'cheapest' : ''}">
                         <div class="card-num">${i+1}</div>
-                        <span class="brand">${isCheapest ? 'MEILLEUR PRIX ' : ''}${name}</span>
+                        <span class="brand">${isBest ? 'MEILLEUR PRIX ' : ''}${name}</span>
                         <span class="address">${s.adresse}, ${s.ville}</span>
                         <div class="price-grid">${priceHTML}</div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${s.geom.lat},${s.geom.lon}" target="_blank" class="btn-nav">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${s.geom.lat},${s.geom.lon}" target="_blank" class="btn-nav">
                             <i class="fas fa-directions"></i> Y ALLER
                         </a>
-                    </div>
-                `;
+                    </div>`;
             });
             map.fitBounds(points, {padding: [30, 30]});
             setTimeout(() => map.invalidateSize(), 300);
         } catch (e) { document.getElementById('loader').style.display = "none"; }
-    }
-
-    // ACTIVATION PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js');
-        });
     }
 </script>
 </body>
