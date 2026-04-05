@@ -8,8 +8,6 @@
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Prix Carburant">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="theme-color" content="#0f172a">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -18,8 +16,9 @@
     <style>
         :root { --green: #00ff87; --blue: #00d2ff; --red: #ff4757; --glass: rgba(255, 255, 255, 0.08); --bg: #0f172a; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: white; padding-bottom: 50px; overflow-x: hidden; }
-        
         .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+
+        /* HEADER */
         .header { text-align: center; padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .pump-logo { font-size: 3rem; color: var(--green); filter: drop-shadow(0 0 10px rgba(0, 255, 135, 0.5)); }
         .header h1 { margin: 0; letter-spacing: 4px; font-size: 1.6rem; text-transform: uppercase; }
@@ -28,10 +27,9 @@
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
         .modal-content { background: #1e293b; margin: 15% auto; padding: 25px; border-radius: 30px; width: 85%; max-width: 400px; border: 1px solid var(--blue); position: relative; text-align: center; box-shadow: 0 0 30px rgba(0, 210, 255, 0.2); }
         .close-modal { position: absolute; top: 15px; right: 20px; font-size: 25px; cursor: pointer; color: var(--red); }
-        .inst-step { text-align: left; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 4px solid var(--blue); }
-        .inst-step i { color: var(--blue); margin-right: 8px; }
+        .inst-step { text-align: left; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 15px; margin-top: 10px; border-left: 4px solid var(--blue); font-size: 0.9rem; }
 
-        /* RESTE DU STYLE */
+        /* FORMULAIRE */
         .glass-panel { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px; position: relative; }
         .search-container { position: relative; flex: 1; }
         .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -40,14 +38,17 @@
         .autocomplete-item { padding: 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .btn-gps { background: rgba(0, 210, 255, 0.15); color: var(--blue); width: 55px; border-radius: 15px; border: 1px solid var(--blue); cursor: pointer; }
         .btn-main { width: 100%; padding: 18px; background: linear-gradient(90deg, var(--green), var(--blue)); color: #000; border: none; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
-        #map { height: 300px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0; display: none; }
+
+        /* RESULTATS */
+        #map { height: 280px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0; display: none; }
         .card { background: var(--glass); padding: 20px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px; position: relative; }
-        .card.cheapest { border: 1px solid var(--green); }
+        .card.cheapest { border: 1px solid var(--green); background: rgba(0, 255, 135, 0.03); }
+        .card-num { position: absolute; top: 15px; right: 20px; background: var(--blue); color: #000; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; }
         .brand { font-size: 1.2rem; font-weight: 900; color: var(--green); text-transform: uppercase; }
         .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
         .price-item { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; display: flex; justify-content: space-between; }
         .price-item.active { border: 1px solid var(--blue); background: rgba(0, 210, 255, 0.1); }
-        .btn-nav { width: 100%; padding: 14px; background: rgba(0, 210, 255, 0.05); color: var(--blue); border: 1px solid var(--blue); border-radius: 15px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; margin-top: 15px; }
+        .btn-nav { width: 100%; padding: 14px; background: rgba(0, 210, 255, 0.05); color: var(--blue); border: 1px solid var(--blue); border-radius: 15px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; margin-top: 15px; box-sizing: border-box; }
         #loader { display: none; text-align: center; padding: 20px; }
         #customRangeBox { display: none; margin-bottom: 12px; }
     </style>
@@ -56,22 +57,21 @@
 
 <div id="installModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeInstall()">&times;</span>
-        <i class="fas fa-mobile-alt" style="font-size: 3rem; color: var(--blue); margin-bottom: 15px;"></i>
-        <h2 style="margin: 0;">Installer l'App ?</h2>
-        <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">Accédez aux prix en un clic depuis votre écran d'accueil.</p>
+        <span class="close-modal" onclick="closeInstall()">×</span>
+        <i class="fas fa-download" style="font-size: 3rem; color: var(--green); margin-bottom: 15px;"></i>
+        <h2 style="margin: 0;">Installer l'App</h2>
+        <p id="installMsg" style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">Accédez aux prix en un clic.</p>
         
-        <div id="iosInstruct" style="display: none;">
-            <div class="inst-step"><i class="fas fa-share-square"></i> 1. Appuyez sur <strong>Partager</strong></div>
-            <div class="inst-step"><i class="far fa-plus-square"></i> 2. Choisir <strong>"Sur l'écran d'accueil"</strong></div>
-        </div>
+        <button id="btnInstallDirect" class="btn-main" style="display:none; margin-top: 20px;">
+            <i class="fas fa-plus-circle"></i> INSTALLER MAINTENANT
+        </button>
 
-        <div id="androidInstruct" style="display: none;">
-            <div class="inst-step"><i class="fas fa-ellipsis-v"></i> 1. Appuyez sur les <strong>3 points</strong></div>
-            <div class="inst-step"><i class="fas fa-download"></i> 2. Choisir <strong>"Installer l'application"</strong></div>
+        <div id="iosInstruct" style="display: none; text-align: left;">
+            <div class="inst-step"><i class="fas fa-share-square"></i> 1. Appuyez sur <strong>Partager</strong></div>
+            <div class="inst-step"><i class="far fa-plus-square"></i> 2. Choisissez <strong>"Sur l'écran d'accueil"</strong></div>
         </div>
         
-        <button class="btn-main" style="margin-top: 20px;" onclick="closeInstall()">J'AI COMPRIS</button>
+        <button class="btn-main" style="margin-top: 15px; background: none; border: 1px solid var(--blue); color: var(--blue);" onclick="closeInstall()">PLUS TARD</button>
     </div>
 </div>
 
@@ -124,23 +124,41 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // --- DETECTION INSTALLATION ---
-    window.addEventListener('load', () => {
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-        if (!isStandalone) {
-            const modal = document.getElementById('installModal');
-            const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            
-            modal.style.display = 'block';
-            if (isiOS) {
-                document.getElementById('iosInstruct').style.display = 'block';
-            } else {
-                document.getElementById('androidInstruct').style.display = 'block';
-            }
+    // --- LOGIQUE INSTALLATION ---
+    let deferredPrompt;
+    const installModal = document.getElementById('installModal');
+    const btnInstallDirect = document.getElementById('btnInstallDirect');
+    const iosInstruct = document.getElementById('iosInstruct');
+
+    // Détection Android (Chrome)
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installModal.style.display = 'block';
+        btnInstallDirect.style.display = 'block';
+    });
+
+    btnInstallDirect.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            closeInstall();
         }
     });
 
-    function closeInstall() { document.getElementById('installModal').style.display = 'none'; }
+    // Détection iOS (Safari/Chrome sur iOS)
+    window.addEventListener('load', () => {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (!isStandalone && isiOS) {
+            installModal.style.display = 'block';
+            iosInstruct.style.display = 'block';
+            document.getElementById('installMsg').innerText = "Installation sur iPhone :";
+        }
+    });
+
+    function closeInstall() { installModal.style.display = 'none'; }
 
     // --- LOGIQUE CARBURANT ---
     const MARQUES = ["TOTAL", "INTERMARCHE", "LECLERC", "CARREFOUR", "SUPER U", "ESSO", "AVIA", "AUCHAN", "BP", "SHELL", "NETTO", "DYNEFF", "ELAN", "CASINO"];
@@ -152,6 +170,7 @@
 
     function checkCustom() { document.getElementById('customRangeBox').style.display = (document.getElementById('rangeSelect').value === 'custom') ? 'block' : 'none'; }
 
+    // Autocomplétion
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
 
