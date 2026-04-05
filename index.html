@@ -16,6 +16,42 @@
     <style>
         :root { --green: #00ff87; --blue: #00d2ff; --red: #ff4757; --glass: rgba(255, 255, 255, 0.08); --bg: #0f172a; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: white; padding-bottom: 50px; overflow-x: hidden; }
+        
+        /* SPLASH SCREEN PERSO */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.6s ease-out, visibility 0.6s;
+        }
+        #splash-screen img {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            border-radius: 20px;
+        }
+        #splash-screen h2 {
+            color: #0f172a;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .splash-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
         .container { padding: 15px; max-width: 600px; margin: 0 auto; }
 
         /* HEADER */
@@ -54,6 +90,11 @@
     </style>
 </head>
 <body>
+
+<div id="splash-screen">
+    <img src="icon-192.png" alt="Logo Studio">
+    <h2>S&C Digital Studio</h2>
+</div>
 
 <div id="installModal" class="modal">
     <div class="modal-content">
@@ -124,13 +165,20 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    // --- GESTION DU SPLASH SCREEN ---
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('splash-hidden');
+        }, 2000); // Reste affiché 2 secondes
+    });
+
     // --- LOGIQUE INSTALLATION ---
     let deferredPrompt;
     const installModal = document.getElementById('installModal');
     const btnInstallDirect = document.getElementById('btnInstallDirect');
     const iosInstruct = document.getElementById('iosInstruct');
 
-    // Détection Android (Chrome)
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -147,7 +195,6 @@
         }
     });
 
-    // Détection iOS (Safari/Chrome sur iOS)
     window.addEventListener('load', () => {
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -170,7 +217,6 @@
 
     function checkCustom() { document.getElementById('customRangeBox').style.display = (document.getElementById('rangeSelect').value === 'custom') ? 'block' : 'none'; }
 
-    // Autocomplétion
     const searchInput = document.getElementById('searchInput');
     const autoList = document.getElementById('autocompleteList');
 
